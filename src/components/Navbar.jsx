@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import Cart from './Cart'; // Importar el componente Cart
+import { routes } from "../utils/routes";
 
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -11,7 +12,7 @@ const Navbar = () => {
         <div className="flex justify-between items-center h-16">
           {/* Logotipo */}
           <div className="flex-shrink-0">
-            <Link to="/">
+            <Link to={routes.home}>
               <img
                 src="/images/logotipo.png"
                 alt="Logotipo"
@@ -23,25 +24,25 @@ const Navbar = () => {
           {/* Menú principal */}
           <div className="hidden md:flex space-x-4 items-center">
             <Link
-              to="/"
+              to={routes.home}
               className="hover:text-yellow-600 font-medium transition-colors"
             >
               Home
             </Link>
             <Link
-              to="/categories/vestimenta"
+              to={`${routes.category}/Prenda`}
               className="hover:text-yellow-600 font-medium transition-colors"
             >
               Vestimenta
             </Link>
             <Link
-              to="/categories/calzado"
+              to={`${routes.category}/Calzado`}
               className="hover:text-yellow-600 font-medium transition-colors"
             >
               Calzado
             </Link>
             <Link
-              to="/categories/accesorios"
+              to={`${routes.category}/Accesorios`}
               className="hover:text-yellow-600 font-medium transition-colors"
             >
               Accesorios
@@ -83,28 +84,28 @@ const Navbar = () => {
         <div className="md:hidden bg-yellow-300 text-gray-800">
           <div className="px-2 pt-2 pb-3 space-y-1">
             <Link
-              to="/"
+              to={routes.home}
               className="block px-3 py-2 rounded-md text-base font-medium hover:bg-yellow-400 hover:text-gray-900"
               onClick={() => setIsMenuOpen(false)}
             >
               Home
             </Link>
             <Link
-              to="/categories/vestimenta"
+              to={`${routes.category}/Prenda`}
               className="block px-3 py-2 rounded-md text-base font-medium hover:bg-yellow-400 hover:text-gray-900"
               onClick={() => setIsMenuOpen(false)}
             >
               Vestimenta
             </Link>
             <Link
-              to="/categories/calzado"
+              to={`${routes.category}/Calzado`}
               className="block px-3 py-2 rounded-md text-base font-medium hover:bg-yellow-400 hover:text-gray-900"
               onClick={() => setIsMenuOpen(false)}
             >
               Calzado
             </Link>
             <Link
-              to="/categories/accesorios"
+              to={`${routes.category}/Accesorios`}
               className="block px-3 py-2 rounded-md text-base font-medium hover:bg-yellow-400 hover:text-gray-900"
               onClick={() => setIsMenuOpen(false)}
             >
@@ -123,3 +124,4 @@ const Navbar = () => {
 };
 
 export default Navbar;
+
