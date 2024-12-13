@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import Cart from './Cart'; // Importar el componente Cart
+import Cart from "./Cart";
 import { routes } from "../utils/routes";
 
 const Navbar = () => {
@@ -13,15 +13,10 @@ const Navbar = () => {
           {/* Logotipo */}
           <div className="flex-shrink-0">
             <Link to={routes.home}>
-              <img
-                src="/images/logotipo.png"
-                alt="Logotipo"
-                className="h-20 w-auto"
-              />
+              <h2 className="text-black text-xl font-bold">LA TIENDA</h2>
             </Link>
           </div>
 
-          {/* Menú principal */}
           <div className="hidden md:flex space-x-4 items-center">
             <Link
               to={routes.home}
@@ -48,11 +43,9 @@ const Navbar = () => {
               Accesorios
             </Link>
 
-            {/* Componente del carrito */}
             <Cart />
           </div>
 
-          {/* Botón hamburguesa */}
           <div className="md:hidden">
             <button
               onClick={() => setIsMenuOpen(!isMenuOpen)}
@@ -79,7 +72,6 @@ const Navbar = () => {
         </div>
       </div>
 
-      {/* Menú desplegable */}
       {isMenuOpen && (
         <div className="md:hidden bg-yellow-300 text-gray-800">
           <div className="px-2 pt-2 pb-3 space-y-1">
@@ -112,8 +104,10 @@ const Navbar = () => {
               Accesorios
             </Link>
 
-            {/* Componente del carrito en el menú móvil */}
-            <div className="block px-3 py-2 rounded-md text-base font-medium hover:bg-yellow-400 hover:text-gray-900" onClick={() => setIsMenuOpen(false)}>
+            <div
+              className="block px-3 py-2 rounded-md text-base font-medium hover:bg-yellow-400 hover:text-gray-900"
+              onClick={() => setIsMenuOpen(false)}
+            >
               <Cart />
             </div>
           </div>
@@ -124,4 +118,3 @@ const Navbar = () => {
 };
 
 export default Navbar;
-

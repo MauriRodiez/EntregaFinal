@@ -1,8 +1,10 @@
 import React, { useState } from "react";
-import { useCart } from "../context/CartContext"; // Importa el contexto
+import { useCart } from "../context/CartContext";
+import { createOrder } from "../services/productService";
+import { useNavigate } from "react-router-dom";
 
 const CheckOut = () => {
-  const { cartItems, clearCart } = useCart(); // Obtén los productos y la función para vaciar el carrito
+  const { cartItems, clearCart } = useCart();
   const [form, setForm] = useState({
     firstName: "",
     lastName: "",
@@ -10,11 +12,12 @@ const CheckOut = () => {
     email: "",
     emailConfirm: "",
   });
-
   const [errors, setErrors] = useState({});
   const [purchaseSuccess, setPurchaseSuccess] = useState(false);
+  const [orderId, setOrderId] = useState(null);
 
-  // Validación del formulario
+  const navigate = useNavigate();
+
   const validateForm = () => {
     const newErrors = {};
 
@@ -28,7 +31,6 @@ const CheckOut = () => {
 
     setErrors(newErrors);
 
-    // Si no hay errores, devuelve true para permitir el envío del formulario
     return Object.keys(newErrors).length === 0;
   };
 
@@ -40,42 +42,46 @@ const CheckOut = () => {
     }));
   };
 
-  const handlePurchase = (e) => {
+  const handlePurchase = async (e) => {
     e.preventDefault();
     if (validateForm()) {
-      // Aquí puedes manejar la lógica de compra
-      alert("Compra realizada con éxito");
-      clearCart(); // Vaciar el carrito después de la compra
-      setPurchaseSuccess(true);
+      try {
+        const orderData = {
+          customer: form,
+          items: cartItems,
+          total: cartItems.reduce(
+            (total, item) => total + item.price * item.quantity,
+            0
+          ),
+          date: new Date(),
+        };
+
+        const newOrderId = await createOrder(orderData);
+        setOrderId(newOrderId);
+        setPurchaseSuccess(true);
+        clearCart();
+
+        navigate(`/order-success/${newOrderId}`);
+      } catch (error) {
+        console.error("Error al crear la orden:", error);
+      }
     }
   };
 
-  // Función para calcular el precio total de un solo producto, multiplicando el precio por la cantidad
   const calculateProductTotal = (price, quantity) => {
     return (price * quantity).toFixed(2);
   };
 
-  // Función para calcular el total de todos los productos en el carrito
   const calculateTotal = () => {
-    return cartItems.reduce((total, item) => {
-      // Asegurarse de que `price` y `quantity` sean números válidos
-      const price = parseFloat(item.price);
-      const quantity = parseInt(item.quantity, 10) || 1; // Asigna 1 si quantity no está definido
-
-      if (isNaN(price) || isNaN(quantity)) {
-        console.error(`Precio o cantidad inválido:`, item);
-        return total; // Si el precio o la cantidad no son válidos, no los sumamos
-      }
-
-      return total + price * quantity;
-    }, 0).toFixed(2); // Redondea el total a dos decimales
+    return cartItems
+      .reduce((total, item) => total + item.price * item.quantity, 0)
+      .toFixed(2);
   };
 
-  // Agrupar productos para mostrar solo una línea por tipo, con la cantidad
   const groupedItems = cartItems.reduce((acc, item) => {
     const existingItem = acc.find((product) => product.id === item.id);
     if (existingItem) {
-      existingItem.quantity += item.quantity; // Sumar la cantidad si el producto ya está en el carrito
+      existingItem.quantity += item.quantity;
     } else {
       acc.push({ ...item });
     }
@@ -83,101 +89,121 @@ const CheckOut = () => {
   }, []);
 
   return (
-    <div className="p-4">
-      <h1 className="text-2xl font-bold mb-4">Checkout</h1>
-      {cartItems.length === 0 ? (
-        <p>No hay productos en el carrito.</p>
-      ) : (
-        <div>
-          <ul>
-            {groupedItems.map((item, index) => (
-              <li key={index} className="flex justify-between border-b py-2">
-                <span>{item.title} (x{item.quantity})</span>
-                <span>{`$${calculateProductTotal(item.price, item.quantity)}`}</span>
-              </li>
-            ))}
-          </ul>
-          <div className="mt-4 flex justify-between font-bold">
-            <span>Total:</span>
-            <span>{`$${calculateTotal()}`}</span>
+    <div className="flex justify-center items-center min-h-screen bg-gray-100 py-6 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-lg w-full bg-white p-8 rounded-lg shadow-md">
+        <h1 className="text-2xl font-bold mb-6 text-center">Checkout</h1>
+
+        {cartItems.length === 0 ? (
+          <p className="text-center text-gray-600">
+            No hay productos en el carrito.
+          </p>
+        ) : (
+          <div>
+            <ul className="space-y-2">
+              {groupedItems.map((item, index) => (
+                <li key={index} className="flex justify-between py-2 border-b">
+                  <span>
+                    {item.title} (x{item.quantity})
+                  </span>
+                  <span>{`$${calculateProductTotal(
+                    item.price,
+                    item.quantity
+                  )}`}</span>
+                </li>
+              ))}
+            </ul>
+            <div className="mt-4 flex justify-between font-bold">
+              <span>Total:</span>
+              <span>{`$${calculateTotal()}`}</span>
+            </div>
           </div>
-        </div>
-      )}
+        )}
 
-      <form onSubmit={handlePurchase} className="mt-8 space-y-4">
-        <div>
-          <label htmlFor="firstName" className="block">Nombre</label>
-          <input
-            type="text"
-            id="firstName"
-            name="firstName"
-            value={form.firstName}
-            onChange={handleFormChange}
-            className="w-full p-2 border"
-          />
-          {errors.firstName && <p className="text-red-500">{errors.firstName}</p>}
-        </div>
+        <form onSubmit={handlePurchase} className="mt-6 space-y-4">
+          <div>
+            <label className="block text-sm font-medium">Nombre</label>
+            <input
+              type="text"
+              name="firstName"
+              value={form.firstName}
+              onChange={handleFormChange}
+              className="input w-full mt-1 p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+            {errors.firstName && (
+              <span className="text-red-500 text-xs">{errors.firstName}</span>
+            )}
+          </div>
 
-        <div>
-          <label htmlFor="lastName" className="block">Apellido</label>
-          <input
-            type="text"
-            id="lastName"
-            name="lastName"
-            value={form.lastName}
-            onChange={handleFormChange}
-            className="w-full p-2 border"
-          />
-          {errors.lastName && <p className="text-red-500">{errors.lastName}</p>}
-        </div>
+          <div>
+            <label className="block text-sm font-medium">Apellido</label>
+            <input
+              type="text"
+              name="lastName"
+              value={form.lastName}
+              onChange={handleFormChange}
+              className="input w-full mt-1 p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+            {errors.lastName && (
+              <span className="text-red-500 text-xs">{errors.lastName}</span>
+            )}
+          </div>
 
-        <div>
-          <label htmlFor="phone" className="block">Teléfono</label>
-          <input
-            type="tel"
-            id="phone"
-            name="phone"
-            value={form.phone}
-            onChange={handleFormChange}
-            className="w-full p-2 border"
-          />
-          {errors.phone && <p className="text-red-500">{errors.phone}</p>}
-        </div>
+          <div>
+            <label className="block text-sm font-medium">Teléfono</label>
+            <input
+              type="text"
+              name="phone"
+              value={form.phone}
+              onChange={handleFormChange}
+              className="input w-full mt-1 p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+            {errors.phone && (
+              <span className="text-red-500 text-xs">{errors.phone}</span>
+            )}
+          </div>
 
-        <div>
-          <label htmlFor="email" className="block">Email</label>
-          <input
-            type="email"
-            id="email"
-            name="email"
-            value={form.email}
-            onChange={handleFormChange}
-            className="w-full p-2 border"
-          />
-          {errors.email && <p className="text-red-500">{errors.email}</p>}
-        </div>
+          <div>
+            <label className="block text-sm font-medium">
+              Correo electrónico
+            </label>
+            <input
+              type="email"
+              name="email"
+              value={form.email}
+              onChange={handleFormChange}
+              className="input w-full mt-1 p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+            {errors.email && (
+              <span className="text-red-500 text-xs">{errors.email}</span>
+            )}
+          </div>
 
-        <div>
-          <label htmlFor="emailConfirm" className="block">Confirmar Email</label>
-          <input
-            type="email"
-            id="emailConfirm"
-            name="emailConfirm"
-            value={form.emailConfirm}
-            onChange={handleFormChange}
-            className="w-full p-2 border"
-          />
-          {errors.emailConfirm && <p className="text-red-500">{errors.emailConfirm}</p>}
-        </div>
+          <div>
+            <label className="block text-sm font-medium">
+              Confirmar correo electrónico
+            </label>
+            <input
+              type="email"
+              name="emailConfirm"
+              value={form.emailConfirm}
+              onChange={handleFormChange}
+              className="input w-full mt-1 p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+            {errors.emailConfirm && (
+              <span className="text-red-500 text-xs">
+                {errors.emailConfirm}
+              </span>
+            )}
+          </div>
 
-        <button
-          type="submit"
-          className="bg-blue-500 text-white px-6 py-2 rounded hover:bg-blue-600 w-full"
-          disabled={cartItems.length === 0 || purchaseSuccess}
-        >
-          Finalizar compra
-        </button>
-      </form>
+          <button
+            type="submit"
+            className="w-full py-3 bg-blue-500 text-white font-bold rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          >
+            Confirmar compra
+          </button>
+        </form>
+      </div>
     </div>
   );
 };

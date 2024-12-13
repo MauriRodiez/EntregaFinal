@@ -1,24 +1,21 @@
 import React, { useState, useEffect } from "react";
-import { useParams } from "react-router-dom"; // Para obtener el parámetro de la URL
-import { getProductsByCategory, getProducts } from "../services/productService"; // Servicios para obtener productos
-import ItemList from "./ItemList"; // El componente para mostrar los productos
+import { useParams } from "react-router-dom";
+import { getProductsByCategory, getProducts } from "../services/productService";
+import ItemList from "./ItemList";
 
 const ItemListContainer = () => {
-  const { category } = useParams(); // Obtener el parámetro de la categoría desde la URL
+  const { category } = useParams();
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        // Si categoryId está presente, obtenemos los productos por categoría, sino obtenemos todos los productos
         if (category) {
-          console.log("categoryId:", category); // Debugging para verificar categoryId
-          const fetchedProducts = await getProductsByCategory(category); // Llamamos al servicio con el parámetro categoryId
+          const fetchedProducts = await getProductsByCategory(category);
           setProducts(fetchedProducts);
         } else {
-          console.log("categoryId no está presente, obteniendo todos los productos"); // Debugging
-          const fetchedProducts = await getProducts(); // Llamamos al servicio para obtener todos los productos
+          const fetchedProducts = await getProducts();
           setProducts(fetchedProducts);
         }
         setLoading(false);
@@ -29,7 +26,7 @@ const ItemListContainer = () => {
     };
 
     fetchProducts();
-  }, [category]); // Dependencia de categoryId para actualizar cuando cambie
+  }, [category]);
 
   return (
     <div className="container mx-auto p-4">

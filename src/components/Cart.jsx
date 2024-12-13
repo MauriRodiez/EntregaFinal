@@ -1,11 +1,11 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { ShoppingCartIcon } from "@heroicons/react/outline";
-import { useCart } from "../context/CartContext"; // Importa el contexto
+import { useCart } from "../context/CartContext"; 
 import { routes } from "../utils/routes";
 
 const Cart = () => {
-  const { totalItems } = useCart(); // Obtén el número total de productos
+  const { totalItems } = useCart(); 
 
   return (
     <Link to={routes.cart} className="relative">

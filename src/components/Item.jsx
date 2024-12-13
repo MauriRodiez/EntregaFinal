@@ -1,9 +1,9 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import { useCart } from "../context/CartContext"; // Importa el contexto
+import { useCart } from "../context/CartContext";
 
 const Item = ({ product }) => {
-  const { addToCart } = useCart(); // Obtén la función del contexto
+  const { addToCart } = useCart();
   const MAX_DESCRIPTION_LENGTH = 100;
 
   const truncatedDescription =
